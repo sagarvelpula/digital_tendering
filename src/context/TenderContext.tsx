@@ -1,5 +1,6 @@
 
 import React, { createContext, useContext, useState } from "react";
+import { getRecommendations } from "@/utils/recommendationEngine";
 
 export interface Tender {
   id: string;
@@ -196,20 +197,45 @@ export const TenderProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   const getRecommendedTenders = (userId: string, userRole: string) => {
+    // Return empty array for non-vendor users
     if (userRole !== "vendor") return [];
     
-    // Get categories from user's previous bids
-    const userBids = getUserBids(userId);
-    const userTenderIds = userBids.map(bid => bid.tenderId);
-    const userTenders = tenders.filter(tender => userTenderIds.includes(tender.id));
-    const preferredCategories = [...new Set(userTenders.map(tender => tender.category))];
-    
-    // Recommend active tenders in preferred categories that the user hasn't bid on
-    return tenders.filter(tender => 
-      tender.status === "active" && 
-      preferredCategories.includes(tender.category) && 
-      !userBids.some(bid => bid.tenderId === tender.id)
-    ).slice(0, 3); // Return top 3 recommendations
+    try {
+      // Get user's previous bids to understand preferences
+      const userBids = getUserBids(userId);
+      
+      // If the user has no previous bids, we can't make AI recommendations
+      if (userBids.length === 0) {
+        // Fallback: Return a few active tenders
+        return tenders
+          .filter(tender => tender.status === "active")
+          .slice(0, 3);
+      }
+      
+      // Get tenders the user has already bid on
+      const userTenderIds = userBids.map(bid => bid.tenderId);
+      const userTenders = tenders.filter(tender => userTenderIds.includes(tender.id));
+      
+      // Get active tenders the user hasn't bid on
+      const availableTenders = tenders.filter(tender => 
+        tender.status === "active" && 
+        !userTenderIds.includes(tender.id)
+      );
+      
+      // Generate recommendations using TF-IDF and cosine similarity
+      const recommendations = getRecommendations(userTenders, availableTenders);
+      
+      console.log("AI Recommendations generated:", recommendations.length);
+      
+      return recommendations;
+      
+    } catch (error) {
+      console.error("Error generating recommendations:", error);
+      // Fallback in case of errors
+      return tenders
+        .filter(tender => tender.status === "active")
+        .slice(0, 3);
+    }
   };
 
   return (

@@ -81,22 +81,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const fetchUserProfile = async (userId: string) => {
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('id, name, email, role')
-        .eq('id', userId)
-        .single();
-
-      if (error) {
-        console.error('Error fetching user profile:', error);
+      // Since we don't have a profiles table yet in Supabase, we'll use the user metadata
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      
+      if (userError) {
+        console.error('Error fetching user:', userError);
         setUser(null);
         setIsAuthenticated(false);
-      } else if (data) {
+      } else if (userData?.user) {
+        // Use metadata from the auth user
+        const metadata = userData.user.user_metadata;
+        
         setUser({
-          id: data.id,
-          name: data.name,
-          email: data.email,
-          role: data.role as Role,
+          id: userData.user.id,
+          name: metadata?.name || userData.user.email?.split('@')[0] || 'User',
+          email: userData.user.email || '',
+          role: (metadata?.role as Role) || 'vendor',
         });
       }
     } catch (error) {
