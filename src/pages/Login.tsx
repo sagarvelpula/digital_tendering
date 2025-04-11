@@ -112,6 +112,12 @@ const Login: React.FC = () => {
                 </div>
               </div>
 
+              <div className="flex justify-end">
+                <Link to="/forgot-password" className="text-sm text-primary hover:underline">
+                  Forgot password?
+                </Link>
+              </div>
+
               {error && <div className="text-red-500 text-sm mt-2">{error}</div>}
             </CardContent>
             <CardFooter className="flex flex-col space-y-4">
