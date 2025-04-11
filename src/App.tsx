@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { TenderProvider } from "./context/TenderContext";
 
@@ -37,10 +37,11 @@ function App() {
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/index" element={<Index />} />
+                <Route path="/" element={<Navigate to="/index" />} />
                 
                 {/* Protected Routes */}
                 <Route element={<AppLayout />}>
-                  <Route path="/" element={<Dashboard />} />
+                  <Route path="/dashboard" element={<Dashboard />} />
                   <Route path="/tenders" element={<TendersList />} />
                   <Route path="/tenders/:id" element={<TenderDetail />} />
                   <Route path="/tenders/new" element={<CreateTender />} />
