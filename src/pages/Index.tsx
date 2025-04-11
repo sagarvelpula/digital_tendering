@@ -10,7 +10,10 @@ const Index = () => {
   if (isLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
-        <Loader2 className="h-10 w-10 animate-spin" />
+        <div className="text-center">
+          <Loader2 className="h-10 w-10 animate-spin mx-auto mb-4" />
+          <p className="text-lg">Loading...</p>
+        </div>
       </div>
     );
   }
