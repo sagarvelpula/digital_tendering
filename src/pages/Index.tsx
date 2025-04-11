@@ -1,12 +1,20 @@
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
+import { Loader2 } from 'lucide-react';
 
-// Redirect to Dashboard if authenticated, otherwise to Login
 const Index = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
   
+  if (isLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <Loader2 className="h-10 w-10 animate-spin" />
+      </div>
+    );
+  }
+
   return isAuthenticated ? <Navigate to="/" /> : <Navigate to="/login" />;
 };
 

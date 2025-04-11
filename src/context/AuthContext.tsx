@@ -1,9 +1,12 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { Session, User } from "@supabase/supabase-js";
+import { useToast } from "@/hooks/use-toast";
 
 export type Role = "admin" | "vendor" | null;
 
-interface User {
+interface UserProfile {
   id: string;
   name: string;
   email: string;
@@ -11,11 +14,12 @@ interface User {
 }
 
 interface AuthContextType {
-  user: User | null;
+  user: UserProfile | null;
   isAuthenticated: boolean;
-  login: (email: string, password: string, role: Role) => void;
-  logout: () => void;
-  register: (name: string, email: string, password: string, role: Role) => void;
+  isLoading: boolean;
+  login: (email: string, password: string) => Promise<void>;
+  logout: () => Promise<void>;
+  register: (name: string, email: string, password: string, role: Role) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -29,56 +33,146 @@ export const useAuth = () => {
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<UserProfile | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [session, setSession] = useState<Session | null>(null);
+  const { toast } = useToast();
 
-  // Check if user is stored in localStorage on initial load
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-      setIsAuthenticated(true);
-    }
+    // Set up the auth state listener first
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, currentSession) => {
+        setSession(currentSession);
+        
+        if (currentSession?.user) {
+          // If we have a session, we're authenticated
+          setIsAuthenticated(true);
+          
+          // Fetch the user profile separately - using setTimeout to avoid Supabase auth deadlock
+          setTimeout(() => {
+            fetchUserProfile(currentSession.user.id);
+          }, 0);
+        } else {
+          // If no session, we're not authenticated
+          setUser(null);
+          setIsAuthenticated(false);
+          setIsLoading(false);
+        }
+      }
+    );
+
+    // Then check for existing session
+    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
+      setSession(currentSession);
+      
+      if (currentSession?.user) {
+        setIsAuthenticated(true);
+        fetchUserProfile(currentSession.user.id);
+      } else {
+        setIsLoading(false);
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
-  const login = (email: string, password: string, role: Role) => {
-    // In a real app, you would validate credentials against a backend
-    // For demo purposes, we'll simulate a successful login
-    const newUser = {
-      id: Math.random().toString(36).substr(2, 9),
-      name: email.split("@")[0],
-      email,
-      role,
-    };
-    
-    localStorage.setItem("user", JSON.stringify(newUser));
-    setUser(newUser);
-    setIsAuthenticated(true);
+  const fetchUserProfile = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (error) {
+        console.error('Error fetching user profile:', error);
+        setUser(null);
+        setIsAuthenticated(false);
+      } else if (data) {
+        setUser({
+          id: data.id,
+          name: data.name,
+          email: data.email,
+          role: data.role as Role,
+        });
+      }
+    } catch (error) {
+      console.error('Error in profile fetch:', error);
+      setUser(null);
+      setIsAuthenticated(false);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const logout = () => {
-    localStorage.removeItem("user");
-    setUser(null);
-    setIsAuthenticated(false);
+  const login = async (email: string, password: string) => {
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      
+      if (error) {
+        throw error;
+      }
+    } catch (error: any) {
+      toast({
+        title: "Login failed",
+        description: error.message || "Please check your credentials and try again",
+        variant: "destructive",
+      });
+      throw error;
+    }
   };
 
-  const register = (name: string, email: string, password: string, role: Role) => {
-    // In a real app, this would create a new user in the backend
-    // For demo purposes, we'll simulate a successful registration
-    const newUser = {
-      id: Math.random().toString(36).substr(2, 9),
-      name,
-      email,
-      role,
-    };
-    
-    localStorage.setItem("user", JSON.stringify(newUser));
-    setUser(newUser);
-    setIsAuthenticated(true);
+  const register = async (name: string, email: string, password: string, role: Role) => {
+    try {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            name,
+            role: role || "vendor",
+          },
+        }
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      toast({
+        title: "Registration successful!",
+        description: "Please check your email to confirm your account.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Registration failed",
+        description: error.message || "Please try again with different credentials",
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
+  const logout = async () => {
+    try {
+      await supabase.auth.signOut();
+      setUser(null);
+      setIsAuthenticated(false);
+    } catch (error) {
+      console.error('Error logging out:', error);
+      toast({
+        title: "Logout failed",
+        description: "Please try again",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, login, logout, register }}>
+    <AuthContext.Provider value={{ user, isAuthenticated, isLoading, login, logout, register }}>
       {children}
     </AuthContext.Provider>
   );

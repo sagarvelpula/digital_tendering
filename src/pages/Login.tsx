@@ -7,16 +7,18 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useNavigate, Link } from 'react-router-dom';
+import { Loader2 } from 'lucide-react';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState<'admin' | 'vendor'>('vendor');
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     
@@ -25,23 +27,32 @@ const Login: React.FC = () => {
       return;
     }
     
+    setIsLoading(true);
     try {
-      login(email, password, role);
+      await login(email, password);
       navigate('/');
     } catch (err) {
+      // Error is handled in the AuthContext with toast
       setError('Failed to log in');
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  // Demo logins for quick testing
-  const loginAsAdmin = () => {
-    login('admin@tenderflow.com', 'password', 'admin');
-    navigate('/');
-  };
-
-  const loginAsVendor = () => {
-    login('vendor@company.com', 'password', 'vendor');
-    navigate('/');
+  // Demo logins - these need to be actual users in your Supabase Auth
+  const loginAsDemoUser = async (demoEmail: string, demoPassword: string) => {
+    setIsLoading(true);
+    setEmail(demoEmail);
+    setPassword(demoPassword);
+    
+    try {
+      await login(demoEmail, demoPassword);
+      navigate('/');
+    } catch (err) {
+      setError('Demo login failed. You need to create these users in Supabase first.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -74,6 +85,7 @@ const Login: React.FC = () => {
                   placeholder="Your email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  disabled={isLoading}
                 />
               </div>
               <div className="space-y-2">
@@ -84,31 +96,26 @@ const Login: React.FC = () => {
                   placeholder="Your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  disabled={isLoading}
                 />
-              </div>
-              <div className="space-y-2">
-                <Label>Account Type</Label>
-                <RadioGroup 
-                  value={role} 
-                  onValueChange={(value) => setRole(value as 'admin' | 'vendor')}
-                  className="flex space-x-4"
-                >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="admin" id="admin" />
-                    <Label htmlFor="admin">Admin</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="vendor" id="vendor" />
-                    <Label htmlFor="vendor">Vendor</Label>
-                  </div>
-                </RadioGroup>
               </div>
 
               {error && <div className="text-red-500 text-sm mt-2">{error}</div>}
             </CardContent>
             <CardFooter className="flex flex-col space-y-4">
-              <Button type="submit" className="w-full">
-                Log In
+              <Button 
+                type="submit" 
+                className="w-full" 
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Logging in...
+                  </>
+                ) : (
+                  'Log In'
+                )}
               </Button>
               <div className="text-sm text-center">
                 Don't have an account?{" "}
@@ -127,17 +134,19 @@ const Login: React.FC = () => {
           <div className="flex gap-4">
             <Button 
               variant="outline" 
-              onClick={loginAsAdmin}
+              onClick={() => loginAsDemoUser('admin@tenderflow.com', 'password123')}
               className="flex-1 text-xs hover:bg-primary hover:text-primary-foreground"
+              disabled={isLoading}
             >
-              Login as Admin
+              Demo Admin
             </Button>
             <Button 
               variant="outline" 
-              onClick={loginAsVendor}
+              onClick={() => loginAsDemoUser('vendor@company.com', 'password123')}
               className="flex-1 text-xs hover:bg-primary hover:text-primary-foreground"
+              disabled={isLoading}
             >
-              Login as Vendor
+              Demo Vendor
             </Button>
           </div>
         </div>
