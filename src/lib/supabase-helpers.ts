@@ -72,7 +72,7 @@ export const fetchTenders = async (): Promise<Tender[]> => {
 export const createTender = async (tender: Omit<Tender, 'id' | 'createdAt'>): Promise<Tender | null> => {
   try {
     // Transform to Supabase schema
-    const supabaseTender: Partial<SupabaseTender> = {
+    const supabaseTender: any = {
       title: tender.title,
       description: tender.description,
       category: tender.category,
@@ -94,13 +94,13 @@ export const createTender = async (tender: Omit<Tender, 'id' | 'createdAt'>): Pr
     // Transform back to app schema
     return {
       id: data.id,
-      title: data.title,
-      description: data.description,
-      category: data.category,
+      title: data.title || '',
+      description: data.description || '',
+      category: data.category || 'Uncategorized',
       value: data.value || 0,
-      deadline: data.deadline,
+      deadline: data.deadline || new Date().toISOString().split('T')[0],
       status: data.status || 'active',
-      createdBy: data.posted_by,
+      createdBy: data.posted_by || '',
       createdAt: data.created_at || new Date().toISOString(),
       requirements: data.requirements || [],
     };
@@ -112,7 +112,7 @@ export const createTender = async (tender: Omit<Tender, 'id' | 'createdAt'>): Pr
 export const updateTender = async (id: string, updates: Partial<Tender>): Promise<Tender | null> => {
   try {
     // Transform to Supabase schema
-    const supabaseUpdates: Partial<SupabaseTender> = {};
+    const supabaseUpdates: any = {};
     if (updates.title) supabaseUpdates.title = updates.title;
     if (updates.description) supabaseUpdates.description = updates.description;
     if (updates.category) supabaseUpdates.category = updates.category;
@@ -133,13 +133,13 @@ export const updateTender = async (id: string, updates: Partial<Tender>): Promis
     // Transform back to app schema
     return {
       id: data.id,
-      title: data.title,
-      description: data.description,
-      category: data.category,
+      title: data.title || '',
+      description: data.description || '',
+      category: data.category || 'Uncategorized',
       value: data.value || 0,
-      deadline: data.deadline,
+      deadline: data.deadline || new Date().toISOString().split('T')[0],
       status: data.status || 'active',
-      createdBy: data.posted_by,
+      createdBy: data.posted_by || '',
       createdAt: data.created_at || new Date().toISOString(),
       requirements: data.requirements || [],
     };
@@ -192,7 +192,7 @@ export const fetchBids = async (): Promise<Bid[]> => {
 export const createBid = async (bid: Omit<Bid, 'id' | 'submittedAt' | 'status'>): Promise<Bid | null> => {
   try {
     // Transform to Supabase schema
-    const supabaseBid = {
+    const supabaseBid: any = {
       tender_id: bid.tenderId,
       vendor_id: bid.vendorId,
       amount: bid.amount,
@@ -214,10 +214,10 @@ export const createBid = async (bid: Omit<Bid, 'id' | 'submittedAt' | 'status'>)
       tenderId: data.tender_id,
       vendorId: data.vendor_id,
       vendorName: data.vendors?.name || 'Unknown Vendor',
-      amount: data.amount,
-      proposal: data.proposal,
+      amount: data.amount || 0,
+      proposal: data.proposal || '',
       status: data.status || 'pending',
-      submittedAt: data.submitted_at,
+      submittedAt: data.submitted_at || new Date().toISOString(),
     };
   } catch (error) {
     return handleSupabaseError(error, 'Failed to submit bid');
@@ -246,10 +246,10 @@ export const updateBid = async (id: string, updates: Partial<Bid>): Promise<Bid 
       tenderId: data.tender_id,
       vendorId: data.vendor_id,
       vendorName: data.vendors?.name || 'Unknown Vendor',
-      amount: data.amount,
-      proposal: data.proposal,
+      amount: data.amount || 0,
+      proposal: data.proposal || '',
       status: data.status || 'pending',
-      submittedAt: data.submitted_at,
+      submittedAt: data.submitted_at || new Date().toISOString(),
     };
   } catch (error) {
     return handleSupabaseError(error, 'Failed to update bid');

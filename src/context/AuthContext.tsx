@@ -54,7 +54,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           
           // Fetch the user profile separately - using setTimeout to avoid Supabase auth deadlock
           setTimeout(() => {
-            fetchUserProfile(currentSession.user.id);
+            fetchUserProfileData(currentSession.user.id);
           }, 0);
         } else {
           // If no session, we're not authenticated
@@ -71,7 +71,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       if (currentSession?.user) {
         setIsAuthenticated(true);
-        fetchUserProfile(currentSession.user.id);
+        fetchUserProfileData(currentSession.user.id);
       } else {
         setIsLoading(false);
       }
@@ -82,7 +82,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, []);
 
-  const fetchUserProfile = async (userId: string) => {
+  const fetchUserProfileData = async (userId: string) => {
     try {
       // Fetch profile from users table
       const profileData = await fetchUserProfile(userId);
