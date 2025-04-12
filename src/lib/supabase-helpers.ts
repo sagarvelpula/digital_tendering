@@ -103,9 +103,9 @@ export const createTender = async (tender: Omit<Tender, 'id' | 'createdAt'>): Pr
       title: data.title || '',
       description: data.description || '',
       category: data.category || 'Uncategorized',
-      value: data.value || 0, // Default to 0 for missing value
+      value: data.value || 0, // Default to 0 for missing value property
       deadline: data.deadline || new Date().toISOString().split('T')[0],
-      status: data.status || 'active', // Default to 'active' for missing status
+      status: data.status || 'active', // Default to 'active' for missing status property
       createdBy: data.posted_by || '',
       createdAt: data.created_at || new Date().toISOString(),
       requirements: data.requirements || [], // Default to empty array for missing requirements

@@ -13,6 +13,8 @@ export type Database = {
         Row: {
           amount: number | null
           id: string
+          proposal: string | null
+          status: string | null
           submitted_at: string | null
           tender_id: string | null
           vendor_id: string | null
@@ -20,6 +22,8 @@ export type Database = {
         Insert: {
           amount?: number | null
           id?: string
+          proposal?: string | null
+          status?: string | null
           submitted_at?: string | null
           tender_id?: string | null
           vendor_id?: string | null
@@ -27,6 +31,8 @@ export type Database = {
         Update: {
           amount?: number | null
           id?: string
+          proposal?: string | null
+          status?: string | null
           submitted_at?: string | null
           tender_id?: string | null
           vendor_id?: string | null
@@ -75,27 +81,39 @@ export type Database = {
       tenders: {
         Row: {
           category: string | null
+          created_at: string | null
           deadline: string | null
           description: string | null
           id: string
           posted_by: string | null
+          requirements: string[] | null
+          status: string | null
           title: string | null
+          value: number | null
         }
         Insert: {
           category?: string | null
+          created_at?: string | null
           deadline?: string | null
           description?: string | null
           id?: string
           posted_by?: string | null
+          requirements?: string[] | null
+          status?: string | null
           title?: string | null
+          value?: number | null
         }
         Update: {
           category?: string | null
+          created_at?: string | null
           deadline?: string | null
           description?: string | null
           id?: string
           posted_by?: string | null
+          requirements?: string[] | null
+          status?: string | null
           title?: string | null
+          value?: number | null
         }
         Relationships: [
           {
@@ -133,7 +151,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_user_role: {
+        Args: { user_id: string }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
