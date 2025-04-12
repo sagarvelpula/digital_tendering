@@ -9,7 +9,125 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      bids: {
+        Row: {
+          amount: number | null
+          id: string
+          submitted_at: string | null
+          tender_id: string | null
+          vendor_id: string | null
+        }
+        Insert: {
+          amount?: number | null
+          id?: string
+          submitted_at?: string | null
+          tender_id?: string | null
+          vendor_id?: string | null
+        }
+        Update: {
+          amount?: number | null
+          id?: string
+          submitted_at?: string | null
+          tender_id?: string | null
+          vendor_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bids_tender_id_fkey"
+            columns: ["tender_id"]
+            isOneToOne: false
+            referencedRelation: "tenders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bids_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_read: boolean | null
+          message: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      tenders: {
+        Row: {
+          category: string | null
+          deadline: string | null
+          description: string | null
+          id: string
+          posted_by: string | null
+          title: string | null
+        }
+        Insert: {
+          category?: string | null
+          deadline?: string | null
+          description?: string | null
+          id?: string
+          posted_by?: string | null
+          title?: string | null
+        }
+        Update: {
+          category?: string | null
+          deadline?: string | null
+          description?: string | null
+          id?: string
+          posted_by?: string | null
+          title?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenders_posted_by_fkey"
+            columns: ["posted_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      users: {
+        Row: {
+          email: string | null
+          id: string
+          name: string | null
+          role: string
+        }
+        Insert: {
+          email?: string | null
+          id?: string
+          name?: string | null
+          role?: string
+        }
+        Update: {
+          email?: string | null
+          id?: string
+          name?: string | null
+          role?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

@@ -1,6 +1,12 @@
 
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
+import { useAuth } from "@/context/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 import { getRecommendations } from "@/utils/recommendationEngine";
+import {
+  fetchTenders, fetchBids, createTender, updateTender,
+  deleteTender, createBid, updateBid, deleteBid
+} from "@/lib/supabase-helpers";
 
 export interface Tender {
   id: string;
@@ -30,14 +36,22 @@ export interface Bid {
 interface TenderContextType {
   tenders: Tender[];
   bids: Bid[];
-  addTender: (tender: Omit<Tender, "id" | "createdAt">) => void;
-  updateTender: (id: string, updates: Partial<Tender>) => void;
-  deleteTender: (id: string) => void;
-  placeBid: (bid: Omit<Bid, "id" | "submittedAt" | "status">) => void;
+  loading: {
+    tenders: boolean;
+    bids: boolean;
+  };
+  addTender: (tender: Omit<Tender, "id" | "createdAt">) => Promise<void>;
+  updateTender: (id: string, updates: Partial<Tender>) => Promise<void>;
+  deleteTender: (id: string) => Promise<void>;
+  placeBid: (bid: Omit<Bid, "id" | "submittedAt" | "status">) => Promise<void>;
+  updateBid: (id: string, updates: Partial<Bid>) => Promise<void>;
+  deleteBid: (id: string) => Promise<void>;
   getUserBids: (userId: string) => Bid[];
   getTenderBids: (tenderId: string) => Bid[];
   getTenderById: (id: string) => Tender | undefined;
   getRecommendedTenders: (userId: string, userRole: string) => Tender[];
+  refreshTenders: () => Promise<void>;
+  refreshBids: () => Promise<void>;
 }
 
 const TenderContext = createContext<TenderContextType | undefined>(undefined);
@@ -50,138 +64,182 @@ export const useTender = () => {
   return context;
 };
 
-// Sample data for demo purposes
-const sampleTenders: Tender[] = [
-  {
-    id: "t1",
-    title: "Website Development for Government Agency",
-    description: "Seeking experienced web development company to build a modern, responsive website for a government agency. The website should include a content management system, search functionality, and meet accessibility requirements.",
-    category: "IT Services",
-    value: 85000,
-    deadline: "2025-06-30",
-    status: "active",
-    createdBy: "admin1",
-    createdAt: "2025-03-15",
-    requirements: ["5+ years experience", "Government sector experience", "Accessibility compliance"],
-  },
-  {
-    id: "t2",
-    title: "Office Furniture Supply",
-    description: "Supply of ergonomic office furniture for a new corporate headquarters. Items include adjustable desks, chairs, meeting tables, and storage solutions.",
-    category: "Supplies",
-    value: 120000,
-    deadline: "2025-05-15",
-    status: "active",
-    createdBy: "admin1",
-    createdAt: "2025-03-10",
-    requirements: ["Quality certification", "Delivery within 45 days", "Installation included"],
-  },
-  {
-    id: "t3",
-    title: "IT Infrastructure Upgrade",
-    description: "Comprehensive IT infrastructure upgrade including servers, networking equipment, and cybersecurity solutions for a mid-sized organization.",
-    category: "IT Services",
-    value: 250000,
-    deadline: "2025-07-20",
-    status: "active",
-    createdBy: "admin1",
-    createdAt: "2025-03-05",
-    requirements: ["Certified technicians", "24/7 support", "3-year warranty"],
-  },
-  {
-    id: "t4",
-    title: "Marketing Campaign Management",
-    description: "Full-service marketing agency needed for a 6-month campaign including digital marketing, social media management, and content creation.",
-    category: "Marketing",
-    value: 75000,
-    deadline: "2025-04-30",
-    status: "active",
-    createdBy: "admin1",
-    createdAt: "2025-03-01",
-    requirements: ["Proven track record", "Industry experience", "Performance metrics"],
-  },
-  {
-    id: "t5",
-    title: "Facility Maintenance Services",
-    description: "Annual contract for comprehensive facility maintenance including HVAC, electrical, plumbing, and general repairs for a large office complex.",
-    category: "Services",
-    value: 180000,
-    deadline: "2025-05-31",
-    status: "active",
-    createdBy: "admin1",
-    createdAt: "2025-02-28",
-    requirements: ["Licensed contractors", "Rapid response time", "24/7 emergency service"],
-  }
-];
-
-const sampleBids: Bid[] = [
-  {
-    id: "b1",
-    tenderId: "t1",
-    vendorId: "vendor1",
-    vendorName: "TechSolutions Inc.",
-    amount: 82000,
-    proposal: "Comprehensive web development solution with ongoing support",
-    status: "pending",
-    submittedAt: "2025-03-20",
-  },
-  {
-    id: "b2",
-    tenderId: "t1",
-    vendorId: "vendor2",
-    vendorName: "WebMasters Pro",
-    amount: 79500,
-    proposal: "Custom CMS with enhanced security features",
-    status: "pending",
-    submittedAt: "2025-03-22",
-  },
-  {
-    id: "b3",
-    tenderId: "t2",
-    vendorId: "vendor3",
-    vendorName: "Office Comfort Solutions",
-    amount: 115000,
-    proposal: "High-quality ergonomic furniture with 5-year warranty",
-    status: "pending",
-    submittedAt: "2025-03-18",
-  }
-];
-
 export const TenderProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [tenders, setTenders] = useState<Tender[]>(sampleTenders);
-  const [bids, setBids] = useState<Bid[]>(sampleBids);
+  const [tenders, setTenders] = useState<Tender[]>([]);
+  const [bids, setBids] = useState<Bid[]>([]);
+  const [loading, setLoading] = useState({
+    tenders: true,
+    bids: true
+  });
+  const { isAuthenticated } = useAuth();
+  const { toast } = useToast();
 
-  const addTender = (tender: Omit<Tender, "id" | "createdAt">) => {
-    const newTender: Tender = {
-      ...tender,
-      id: Math.random().toString(36).substr(2, 9),
-      createdAt: new Date().toISOString().split('T')[0],
-    };
-    setTenders([...tenders, newTender]);
+  // Initial data fetch
+  useEffect(() => {
+    if (isAuthenticated) {
+      refreshTenders();
+      refreshBids();
+    }
+  }, [isAuthenticated]);
+
+  const refreshTenders = async () => {
+    setLoading(prev => ({ ...prev, tenders: true }));
+    try {
+      const fetchedTenders = await fetchTenders();
+      setTenders(fetchedTenders);
+    } catch (error) {
+      console.error("Failed to fetch tenders:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load tenders",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(prev => ({ ...prev, tenders: false }));
+    }
   };
 
-  const updateTender = (id: string, updates: Partial<Tender>) => {
-    setTenders(
-      tenders.map(tender => 
-        tender.id === id ? { ...tender, ...updates } : tender
-      )
-    );
+  const refreshBids = async () => {
+    setLoading(prev => ({ ...prev, bids: true }));
+    try {
+      const fetchedBids = await fetchBids();
+      setBids(fetchedBids);
+    } catch (error) {
+      console.error("Failed to fetch bids:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load bids",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(prev => ({ ...prev, bids: false }));
+    }
   };
 
-  const deleteTender = (id: string) => {
-    setTenders(tenders.filter(tender => tender.id !== id));
-    // Also delete associated bids
-    setBids(bids.filter(bid => bid.tenderId !== id));
+  const addTender = async (tender: Omit<Tender, "id" | "createdAt">) => {
+    try {
+      const newTender = await createTender(tender);
+      if (newTender) {
+        setTenders(prev => [...prev, newTender]);
+        toast({
+          title: "Success",
+          description: "Tender created successfully",
+        });
+      }
+    } catch (error) {
+      console.error("Failed to create tender:", error);
+      toast({
+        title: "Error",
+        description: "Failed to create tender",
+        variant: "destructive",
+      });
+    }
   };
 
-  const placeBid = (bid: Omit<Bid, "id" | "submittedAt" | "status">) => {
-    const newBid: Bid = {
-      ...bid,
-      id: Math.random().toString(36).substr(2, 9),
-      status: "pending",
-      submittedAt: new Date().toISOString().split('T')[0],
-    };
-    setBids([...bids, newBid]);
+  const modifyTender = async (id: string, updates: Partial<Tender>) => {
+    try {
+      const updatedTender = await updateTender(id, updates);
+      if (updatedTender) {
+        setTenders(prev => 
+          prev.map(tender => tender.id === id ? { ...tender, ...updatedTender } : tender)
+        );
+        toast({
+          title: "Success",
+          description: "Tender updated successfully",
+        });
+      }
+    } catch (error) {
+      console.error("Failed to update tender:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update tender",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const removeTender = async (id: string) => {
+    try {
+      const success = await deleteTender(id);
+      if (success) {
+        setTenders(prev => prev.filter(tender => tender.id !== id));
+        // Also remove associated bids
+        setBids(prev => prev.filter(bid => bid.tenderId !== id));
+        toast({
+          title: "Success",
+          description: "Tender deleted successfully",
+        });
+      }
+    } catch (error) {
+      console.error("Failed to delete tender:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete tender",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const placeBid = async (bid: Omit<Bid, "id" | "submittedAt" | "status">) => {
+    try {
+      const newBid = await createBid(bid);
+      if (newBid) {
+        setBids(prev => [...prev, newBid]);
+        toast({
+          title: "Success",
+          description: "Bid submitted successfully",
+        });
+      }
+    } catch (error) {
+      console.error("Failed to place bid:", error);
+      toast({
+        title: "Error",
+        description: "Failed to submit bid",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const modifyBid = async (id: string, updates: Partial<Bid>) => {
+    try {
+      const updatedBid = await updateBid(id, updates);
+      if (updatedBid) {
+        setBids(prev => 
+          prev.map(bid => bid.id === id ? { ...bid, ...updatedBid } : bid)
+        );
+        toast({
+          title: "Success",
+          description: "Bid updated successfully",
+        });
+      }
+    } catch (error) {
+      console.error("Failed to update bid:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update bid",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const removeBid = async (id: string) => {
+    try {
+      const success = await deleteBid(id);
+      if (success) {
+        setBids(prev => prev.filter(bid => bid.id !== id));
+        toast({
+          title: "Success",
+          description: "Bid deleted successfully",
+        });
+      }
+    } catch (error) {
+      console.error("Failed to delete bid:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete bid",
+        variant: "destructive",
+      });
+    }
   };
 
   const getUserBids = (userId: string) => {
@@ -242,14 +300,19 @@ export const TenderProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     <TenderContext.Provider value={{
       tenders,
       bids,
+      loading,
       addTender,
-      updateTender,
-      deleteTender,
+      updateTender: modifyTender,
+      deleteTender: removeTender,
       placeBid,
+      updateBid: modifyBid,
+      deleteBid: removeBid,
       getUserBids,
       getTenderBids,
       getTenderById,
-      getRecommendedTenders
+      getRecommendedTenders,
+      refreshTenders,
+      refreshBids
     }}>
       {children}
     </TenderContext.Provider>

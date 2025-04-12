@@ -1,50 +1,56 @@
 
-import React, { useState } from 'react';
+import React from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { resetPasswordSchema } from '@/lib/form-schemas';
 import { useAuth } from '@/context/AuthContext';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { useNavigate, Link } from 'react-router-dom';
 import { Loader2, ArrowLeft } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 
+type ForgotPasswordFormValues = {
+  email: string;
+};
+
 const ForgotPassword: React.FC = () => {
-  const [email, setEmail] = useState('');
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitted, setIsSubmitted] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
   const { resetPassword } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const form = useForm<ForgotPasswordFormValues>({
+    resolver: zodResolver(resetPasswordSchema),
+    defaultValues: {
+      email: '',
+    },
+  });
+
+  const { isSubmitting } = form.formState;
+
+  const onSubmit = async (data: ForgotPasswordFormValues) => {
+    setError(null);
     
-    if (!email) {
-      toast({
-        title: "Email required",
-        description: "Please enter your email address",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    setIsLoading(true);
     try {
-      await resetPassword(email);
+      await resetPassword(data.email);
       setIsSubmitted(true);
       toast({
         title: "Reset email sent",
         description: "Please check your email for the password reset link",
       });
     } catch (err: any) {
+      setError(err.message || "Failed to send reset email. Please try again later.");
       toast({
         title: "Failed to send reset email",
         description: err.message || "Please try again later",
         variant: "destructive",
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -87,44 +93,60 @@ const ForgotPassword: React.FC = () => {
               </Button>
             </CardContent>
           ) : (
-            <form onSubmit={handleSubmit}>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="Your email address"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    disabled={isLoading}
-                  />
-                </div>
-              </CardContent>
-              <CardFooter className="flex flex-col space-y-4">
-                <Button 
-                  type="submit" 
-                  className="w-full" 
-                  disabled={isLoading}
-                >
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Sending reset link...
-                    </>
-                  ) : (
-                    'Send Reset Link'
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)}>
+                <CardContent className="space-y-4">
+                  {error && (
+                    <Alert variant="destructive">
+                      <AlertDescription>{error}</AlertDescription>
+                    </Alert>
                   )}
-                </Button>
-                <Link 
-                  to="/login" 
-                  className="flex items-center justify-center text-sm text-primary hover:underline"
-                >
-                  <ArrowLeft className="mr-1 h-4 w-4" />
-                  Back to Login
-                </Link>
-              </CardFooter>
-            </form>
+                  
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email</FormLabel>
+                        <FormControl>
+                          <Input
+                            id="email"
+                            type="email"
+                            placeholder="Your email address"
+                            disabled={isSubmitting}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </CardContent>
+                <CardFooter className="flex flex-col space-y-4">
+                  <Button 
+                    type="submit" 
+                    className="w-full" 
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Sending reset link...
+                      </>
+                    ) : (
+                      'Send Reset Link'
+                    )}
+                  </Button>
+                  <Link 
+                    to="/login" 
+                    className="flex items-center justify-center text-sm text-primary hover:underline"
+                  >
+                    <ArrowLeft className="mr-1 h-4 w-4" />
+                    Back to Login
+                  </Link>
+                </CardFooter>
+              </form>
+            </Form>
           )}
         </Card>
       </div>

@@ -3,6 +3,7 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Session, User } from "@supabase/supabase-js";
 import { useToast } from "@/hooks/use-toast";
+import { fetchUserProfile } from "@/lib/supabase-helpers";
 
 export type Role = "admin" | "vendor" | null;
 
@@ -83,22 +84,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const fetchUserProfile = async (userId: string) => {
     try {
-      // Since we don't have a profiles table yet in Supabase, we'll use the user metadata
-      const { data: userData, error: userError } = await supabase.auth.getUser();
+      // Fetch profile from users table
+      const profileData = await fetchUserProfile(userId);
       
-      if (userError) {
-        console.error('Error fetching user:', userError);
-        setUser(null);
-        setIsAuthenticated(false);
-      } else if (userData?.user) {
-        // Use metadata from the auth user
-        const metadata = userData.user.user_metadata;
+      // If no profile data, fallback to auth user metadata
+      if (!profileData) {
+        const { data: userData, error: userError } = await supabase.auth.getUser();
         
+        if (userError) {
+          console.error('Error fetching user:', userError);
+          setUser(null);
+          setIsAuthenticated(false);
+        } else if (userData?.user) {
+          // Use metadata from the auth user
+          const metadata = userData.user.user_metadata;
+          
+          setUser({
+            id: userData.user.id,
+            name: metadata?.name || userData.user.email?.split('@')[0] || 'User',
+            email: userData.user.email || '',
+            role: (metadata?.role as Role) || 'vendor',
+          });
+        }
+      } else {
+        // Use the profile data from the users table
         setUser({
-          id: userData.user.id,
-          name: metadata?.name || userData.user.email?.split('@')[0] || 'User',
-          email: userData.user.email || '',
-          role: (metadata?.role as Role) || 'vendor',
+          id: profileData.id,
+          name: profileData.name || 'User',
+          email: profileData.email || '',
+          role: profileData.role as Role || 'vendor',
         });
       }
     } catch (error) {
@@ -117,6 +131,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (error) {
         throw error;
       }
+      
+      toast({
+        title: "Login successful",
+        description: "Welcome back!",
+      });
     } catch (error: any) {
       toast({
         title: "Login failed",
@@ -167,6 +186,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (error) {
         throw error;
       }
+      
+      toast({
+        title: "Password reset email sent",
+        description: "Please check your email for the reset link",
+      });
     } catch (error: any) {
       toast({
         title: "Password reset failed",
@@ -184,6 +208,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (error) {
         throw error;
       }
+      
+      toast({
+        title: "Password updated",
+        description: "Your password has been successfully updated",
+      });
     } catch (error: any) {
       toast({
         title: "Password update failed",
@@ -199,6 +228,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       await supabase.auth.signOut();
       setUser(null);
       setIsAuthenticated(false);
+      
+      toast({
+        title: "Logged out",
+        description: "You have been successfully logged out",
+      });
     } catch (error) {
       console.error('Error logging out:', error);
       toast({
