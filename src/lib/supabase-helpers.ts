@@ -60,12 +60,12 @@ export const fetchTenders = async (): Promise<Tender[]> => {
       title: tender.title || '',
       description: tender.description || '',
       category: tender.category || 'Uncategorized',
-      value: tender.value || 0,
+      value: tender.value || 0, // Default to 0 for missing value property
       deadline: tender.deadline || new Date().toISOString().split('T')[0],
-      status: tender.status || 'active',
+      status: tender.status || 'active', // Default to 'active' for missing status property
       createdBy: tender.posted_by || '',
       createdAt: tender.created_at || new Date().toISOString(),
-      requirements: tender.requirements || [],
+      requirements: tender.requirements || [], // Default to empty array for missing requirements
     }));
   } catch (error) {
     return handleSupabaseError(error, 'Failed to fetch tenders') || [];
@@ -86,7 +86,7 @@ export const createTender = async (tender: Omit<Tender, 'id' | 'createdAt'>): Pr
       requirements: tender.requirements,
     };
 
-    const { data, error } = await supabase
+    const { data: rawData, error } = await supabase
       .from('tenders')
       .insert(supabaseTender)
       .select()
@@ -94,18 +94,21 @@ export const createTender = async (tender: Omit<Tender, 'id' | 'createdAt'>): Pr
 
     if (error) throw error;
     
+    // Type cast and add missing fields with defaults
+    const data = rawData as any;
+    
     // Transform back to app schema
     return {
       id: data.id || '',
       title: data.title || '',
       description: data.description || '',
       category: data.category || 'Uncategorized',
-      value: data.value || 0,
+      value: data.value || 0, // Default to 0 for missing value
       deadline: data.deadline || new Date().toISOString().split('T')[0],
-      status: data.status || 'active',
+      status: data.status || 'active', // Default to 'active' for missing status
       createdBy: data.posted_by || '',
       createdAt: data.created_at || new Date().toISOString(),
-      requirements: data.requirements || [],
+      requirements: data.requirements || [], // Default to empty array for missing requirements
     };
   } catch (error) {
     return handleSupabaseError(error, 'Failed to create tender');
@@ -124,7 +127,7 @@ export const updateTender = async (id: string, updates: Partial<Tender>): Promis
     if (updates.status) supabaseUpdates.status = updates.status;
     if (updates.requirements) supabaseUpdates.requirements = updates.requirements;
 
-    const { data, error } = await supabase
+    const { data: rawData, error } = await supabase
       .from('tenders')
       .update(supabaseUpdates)
       .eq('id', id)
@@ -133,18 +136,21 @@ export const updateTender = async (id: string, updates: Partial<Tender>): Promis
 
     if (error) throw error;
     
+    // Type cast and add missing fields with defaults
+    const data = rawData as any;
+    
     // Transform back to app schema
     return {
       id: data.id || '',
       title: data.title || '',
       description: data.description || '',
       category: data.category || 'Uncategorized',
-      value: data.value || 0,
+      value: data.value || 0, // Default to 0 for missing value
       deadline: data.deadline || new Date().toISOString().split('T')[0],
-      status: data.status || 'active',
+      status: data.status || 'active', // Default to 'active' for missing status
       createdBy: data.posted_by || '',
       createdAt: data.created_at || new Date().toISOString(),
-      requirements: data.requirements || [],
+      requirements: data.requirements || [], // Default to empty array for missing requirements
     };
   } catch (error) {
     return handleSupabaseError(error, 'Failed to update tender');
@@ -183,8 +189,8 @@ export const fetchBids = async (): Promise<Bid[]> => {
       vendorId: bid.vendor_id || '',
       vendorName: bid.vendors?.name || 'Unknown Vendor',
       amount: bid.amount || 0,
-      proposal: bid.proposal || '',
-      status: bid.status || 'pending',
+      proposal: bid.proposal || '', // Default for missing proposal
+      status: bid.status || 'pending', // Default for missing status
       submittedAt: bid.submitted_at || new Date().toISOString(),
     }));
   } catch (error) {
@@ -204,7 +210,7 @@ export const createBid = async (bid: Omit<Bid, 'id' | 'submittedAt' | 'status'>)
       status: 'pending'
     };
 
-    const { data, error } = await supabase
+    const { data: rawData, error } = await supabase
       .from('bids')
       .insert(supabaseBid)
       .select('*, vendors:vendor_id(name)')
@@ -212,14 +218,17 @@ export const createBid = async (bid: Omit<Bid, 'id' | 'submittedAt' | 'status'>)
 
     if (error) throw error;
     
+    // Type cast and add missing fields with defaults
+    const data = rawData as any;
+    
     return {
       id: data.id || '',
       tenderId: data.tender_id || '',
       vendorId: data.vendor_id || '',
       vendorName: data.vendors?.name || 'Unknown Vendor',
       amount: data.amount || 0,
-      proposal: data.proposal || '',
-      status: data.status || 'pending',
+      proposal: data.proposal || '', // Default for missing proposal
+      status: data.status || 'pending', // Default for missing status
       submittedAt: data.submitted_at || new Date().toISOString(),
     };
   } catch (error) {
@@ -235,7 +244,7 @@ export const updateBid = async (id: string, updates: Partial<Bid>): Promise<Bid 
     if (updates.proposal) supabaseUpdates.proposal = updates.proposal;
     if (updates.status) supabaseUpdates.status = updates.status;
 
-    const { data, error } = await supabase
+    const { data: rawData, error } = await supabase
       .from('bids')
       .update(supabaseUpdates)
       .eq('id', id)
@@ -244,14 +253,17 @@ export const updateBid = async (id: string, updates: Partial<Bid>): Promise<Bid 
 
     if (error) throw error;
     
+    // Type cast and add missing fields with defaults
+    const data = rawData as any;
+    
     return {
       id: data.id || '',
       tenderId: data.tender_id || '',
       vendorId: data.vendor_id || '',
       vendorName: data.vendors?.name || 'Unknown Vendor',
       amount: data.amount || 0,
-      proposal: data.proposal || '',
-      status: data.status || 'pending',
+      proposal: data.proposal || '', // Default for missing proposal
+      status: data.status || 'pending', // Default for missing status
       submittedAt: data.submitted_at || new Date().toISOString(),
     };
   } catch (error) {
