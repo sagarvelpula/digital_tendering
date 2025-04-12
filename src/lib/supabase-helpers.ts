@@ -1,7 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { Bid, Tender } from '@/context/TenderContext';
-import { toast } from '@/hooks/use-toast';
+import { toast } from '@/components/ui/use-toast';
 
 // Error handling utility
 export const handleSupabaseError = (error: any, message: string = 'Operation failed') => {
@@ -17,11 +17,11 @@ export const handleSupabaseError = (error: any, message: string = 'Operation fai
 // Types to match the Supabase schema
 export type SupabaseTender = {
   id: string;
-  title: string;
-  description: string;
-  category: string;
-  deadline: string;
-  posted_by: string;
+  title: string | null;
+  description: string | null;
+  category: string | null;
+  deadline: string | null;
+  posted_by: string | null;
   value?: number;
   status?: string;
   requirements?: string[];
@@ -30,12 +30,15 @@ export type SupabaseTender = {
 
 export type SupabaseBid = {
   id: string;
-  tender_id: string;
-  vendor_id: string;
-  amount: number;
-  proposal: string;
+  tender_id: string | null;
+  vendor_id: string | null;
+  amount: number | null;
+  proposal?: string;
   status?: string;
-  submitted_at: string;
+  submitted_at: string | null;
+  vendors?: { 
+    name: string 
+  };
 };
 
 // TENDER OPERATIONS
@@ -52,8 +55,8 @@ export const fetchTenders = async (): Promise<Tender[]> => {
     }
 
     // Transform from Supabase schema to app schema
-    return data.map((tender: any) => ({
-      id: tender.id,
+    return (data || []).map((tender: any) => ({
+      id: tender.id || '',
       title: tender.title || '',
       description: tender.description || '',
       category: tender.category || 'Uncategorized',
@@ -61,7 +64,7 @@ export const fetchTenders = async (): Promise<Tender[]> => {
       deadline: tender.deadline || new Date().toISOString().split('T')[0],
       status: tender.status || 'active',
       createdBy: tender.posted_by || '',
-      createdAt: tender.created_at || new Date().toISOString().split('T')[0],
+      createdAt: tender.created_at || new Date().toISOString(),
       requirements: tender.requirements || [],
     }));
   } catch (error) {
@@ -93,7 +96,7 @@ export const createTender = async (tender: Omit<Tender, 'id' | 'createdAt'>): Pr
     
     // Transform back to app schema
     return {
-      id: data.id,
+      id: data.id || '',
       title: data.title || '',
       description: data.description || '',
       category: data.category || 'Uncategorized',
@@ -132,7 +135,7 @@ export const updateTender = async (id: string, updates: Partial<Tender>): Promis
     
     // Transform back to app schema
     return {
-      id: data.id,
+      id: data.id || '',
       title: data.title || '',
       description: data.description || '',
       category: data.category || 'Uncategorized',
@@ -174,10 +177,10 @@ export const fetchBids = async (): Promise<Bid[]> => {
 
     if (error) throw error;
 
-    return data.map((bid: any) => ({
-      id: bid.id,
-      tenderId: bid.tender_id,
-      vendorId: bid.vendor_id,
+    return (data || []).map((bid: any) => ({
+      id: bid.id || '',
+      tenderId: bid.tender_id || '',
+      vendorId: bid.vendor_id || '',
       vendorName: bid.vendors?.name || 'Unknown Vendor',
       amount: bid.amount || 0,
       proposal: bid.proposal || '',
@@ -210,9 +213,9 @@ export const createBid = async (bid: Omit<Bid, 'id' | 'submittedAt' | 'status'>)
     if (error) throw error;
     
     return {
-      id: data.id,
-      tenderId: data.tender_id,
-      vendorId: data.vendor_id,
+      id: data.id || '',
+      tenderId: data.tender_id || '',
+      vendorId: data.vendor_id || '',
       vendorName: data.vendors?.name || 'Unknown Vendor',
       amount: data.amount || 0,
       proposal: data.proposal || '',
@@ -242,9 +245,9 @@ export const updateBid = async (id: string, updates: Partial<Bid>): Promise<Bid 
     if (error) throw error;
     
     return {
-      id: data.id,
-      tenderId: data.tender_id,
-      vendorId: data.vendor_id,
+      id: data.id || '',
+      tenderId: data.tender_id || '',
+      vendorId: data.vendor_id || '',
       vendorName: data.vendors?.name || 'Unknown Vendor',
       amount: data.amount || 0,
       proposal: data.proposal || '',

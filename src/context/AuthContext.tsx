@@ -97,7 +97,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setIsAuthenticated(false);
         } else if (userData?.user) {
           // Use metadata from the auth user
-          const metadata = userData.user.user_metadata;
+          const metadata = userData.user.user_metadata || {};
           
           setUser({
             id: userData.user.id,
