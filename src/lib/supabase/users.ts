@@ -8,7 +8,7 @@ export type UserProfile = {
   name: string;
   email: string;
   role: Role;
-  status?: string;
+  status?: string;  // Added this line to include status
   photo_url?: string;
   company?: string;
   categories?: string[];
