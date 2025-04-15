@@ -8,8 +8,9 @@ export * from './supabase/users';
 import { supabase } from '@/integrations/supabase/client';
 import { handleSupabaseError } from './supabase/core';
 import { Role } from '@/context/AuthContext';
+import { UserProfile } from './supabase/users';
 
-export const fetchUserProfile = async (userId: string) => {
+export const fetchUserProfile = async (userId: string): Promise<UserProfile | null> => {
   try {
     const { data, error } = await supabase
       .from('users')
