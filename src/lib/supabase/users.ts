@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { handleSupabaseError } from './core';
 import { Role } from '@/context/AuthContext';
@@ -7,7 +8,7 @@ export type UserProfile = {
   name: string;
   email: string;
   role: Role;
-  status?: string;  // Already exists from previous edit
+  status?: 'active' | 'banned';  // Updated to have specific status values
   photo_url?: string;
   company?: string;
   categories?: string[];
