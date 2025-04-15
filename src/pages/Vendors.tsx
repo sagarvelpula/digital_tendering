@@ -137,7 +137,7 @@ const Vendors = () => {
                           {vendor.status === 'banned' ? (
                             <Badge variant="destructive">Banned</Badge>
                           ) : (
-                            <Badge variant="success" className="bg-green-600">Active</Badge>
+                            <Badge className="bg-green-600">Active</Badge>
                           )}
                         </TableCell>
                         <TableCell>
