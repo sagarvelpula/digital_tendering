@@ -1,6 +1,7 @@
 export * from './supabase/core';
 export * from './supabase/tenders';
 export * from './supabase/bids';
+export * from './supabase/users';
 
 // Keep the user profile operations in this file for now since they're simpler
 import { supabase } from '@/integrations/supabase/client';

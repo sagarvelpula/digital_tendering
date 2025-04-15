@@ -24,6 +24,11 @@ import PlaceBid from "./pages/PlaceBid";
 import MyBids from "./pages/MyBids";
 import NotFound from "./pages/NotFound";
 import Index from "./pages/Index";
+import Vendors from "./pages/Vendors";
+import Reports from "./pages/Reports";
+import Settings from "./pages/Settings";
+import Help from "./pages/Help";
+import Profile from "./pages/Profile";
 
 // Create a client
 const queryClient = new QueryClient({
@@ -58,11 +63,26 @@ function App() {
                   <Route path="/dashboard" element={<Dashboard />} />
                   <Route path="/tenders" element={<TendersList />} />
                   <Route path="/tenders/:id" element={<TenderDetail />} />
+                  <Route path="/profile" element={<Profile />} />
+                  <Route path="/settings" element={<Settings />} />
+                  <Route path="/help" element={<Help />} />
                   
                   {/* Admin only routes */}
                   <Route path="/tenders/new" element={
                     <RoleBasedAccess allowedRoles={["admin"]}>
                       <CreateTender />
+                    </RoleBasedAccess>
+                  } />
+                  
+                  <Route path="/vendors" element={
+                    <RoleBasedAccess allowedRoles={["admin"]}>
+                      <Vendors />
+                    </RoleBasedAccess>
+                  } />
+                  
+                  <Route path="/reports" element={
+                    <RoleBasedAccess allowedRoles={["admin"]}>
+                      <Reports />
                     </RoleBasedAccess>
                   } />
                   
@@ -78,22 +98,6 @@ function App() {
                       <MyBids />
                     </RoleBasedAccess>
                   } />
-                  
-                  {/* Additional routes with role-based access */}
-                  <Route path="/vendors" element={
-                    <RoleBasedAccess allowedRoles={["admin"]}>
-                      <div className="py-20 text-center">Vendors Management (Coming Soon)</div>
-                    </RoleBasedAccess>
-                  } />
-                  
-                  <Route path="/reports" element={
-                    <RoleBasedAccess allowedRoles={["admin"]}>
-                      <div className="py-20 text-center">Reports Dashboard (Coming Soon)</div>
-                    </RoleBasedAccess>
-                  } />
-                  
-                  <Route path="/settings" element={<div className="py-20 text-center">Settings Page (Coming Soon)</div>} />
-                  <Route path="/help" element={<div className="py-20 text-center">Help Center (Coming Soon)</div>} />
                 </Route>
 
                 {/* Not Found */}

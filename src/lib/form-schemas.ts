@@ -41,3 +41,28 @@ export const bidSchema = z.object({
   amount: z.coerce.number().positive({ message: "Bid amount must be a positive number" }),
   proposal: z.string().min(20, { message: "Proposal must be at least 20 characters" }),
 });
+
+// New schema for admin settings
+export const adminSettingsSchema = z.object({
+  defaultTenderDuration: z.coerce.number().int().positive(),
+  maxBidsAllowed: z.coerce.number().int().positive(),
+});
+
+// New schema for vendor settings
+export const vendorSettingsSchema = z.object({
+  preferredCategories: z.array(z.string()),
+  emailNotifications: z.boolean(),
+});
+
+// New schema for support form
+export const supportFormSchema = z.object({
+  subject: z.string().min(5, { message: "Subject must be at least 5 characters" }),
+  message: z.string().min(20, { message: "Message must be at least 20 characters" }),
+});
+
+// New schema for profile update
+export const profileUpdateSchema = z.object({
+  name: z.string().min(2, { message: "Name must be at least 2 characters" }),
+  email: z.string().email({ message: "Invalid email address" }),
+  company: z.string().optional(),
+});
