@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { handleSupabaseError } from './core';
 import { Role } from '@/context/AuthContext';
@@ -7,7 +8,7 @@ export type UserProfile = {
   name: string;
   email: string;
   role: Role;
-  status?: 'active' | 'banned';  // Added status field with specific values
+  status?: 'active' | 'banned';  // Ensure status is included in the type
   photo_url?: string;
   company?: string;
   categories?: string[];
@@ -19,7 +20,7 @@ export type UserProfileUpdate = Partial<{
   name: string;
   email: string;
   role: Role;
-  status: 'active' | 'banned';  // Added status field with specific values
+  status: 'active' | 'banned';  // Add status to update type
   photo_url: string;
   company: string;
   categories: string[];
