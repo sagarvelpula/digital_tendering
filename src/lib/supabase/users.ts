@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { handleSupabaseError } from './core';
 import { Role } from '@/context/AuthContext';
@@ -8,12 +7,24 @@ export type UserProfile = {
   name: string;
   email: string;
   role: Role;
-  status?: string;  // Added this line to include status
+  status?: string;  // Already exists from previous edit
   photo_url?: string;
   company?: string;
   categories?: string[];
   email_notifications?: boolean;
 };
+
+// Update the type for profile updates to include status
+export type UserProfileUpdate = Partial<{
+  name: string;
+  email: string;
+  role: Role;
+  status: 'active' | 'banned';
+  photo_url: string;
+  company: string;
+  categories: string[];
+  email_notifications: boolean;
+}>;
 
 export const fetchAllVendors = async (): Promise<UserProfile[]> => {
   try {
@@ -76,27 +87,11 @@ export const updateUserStatus = async (userId: string, status: 'active' | 'banne
   }
 };
 
-export const updateUserProfile = async (userId: string, updates: Partial<UserProfile>): Promise<UserProfile | null> => {
+export const updateUserProfile = async (userId: string, updates: UserProfileUpdate): Promise<UserProfile | null> => {
   try {
-    // Make sure we only update fields that exist in the database table
-    const dbSafeUpdates = {
-      name: updates.name,
-      email: updates.email,
-      company: updates.company,
-      photo_url: updates.photo_url,
-      categories: updates.categories,
-      email_notifications: updates.email_notifications,
-      status: updates.status
-    };
-
-    // Filter out undefined values
-    const filteredUpdates = Object.fromEntries(
-      Object.entries(dbSafeUpdates).filter(([_, value]) => value !== undefined)
-    );
-
     const { data, error } = await supabase
       .from('users')
-      .update(filteredUpdates)
+      .update(updates)
       .eq('id', userId)
       .select();
     
