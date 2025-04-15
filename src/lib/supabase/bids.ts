@@ -7,7 +7,7 @@ export const fetchBids = async (): Promise<Bid[]> => {
   try {
     const { data, error } = await supabase
       .from('bids')
-      .select('*, vendors:vendor_id(name)');
+      .select('*, users:vendor_id(name)');
 
     if (error) throw error;
 
@@ -15,7 +15,7 @@ export const fetchBids = async (): Promise<Bid[]> => {
       id: bid.id || '',
       tenderId: bid.tender_id || '',
       vendorId: bid.vendor_id || '',
-      vendorName: bid.vendors?.name || 'Unknown Vendor',
+      vendorName: bid.users?.name || 'Unknown Vendor',
       amount: bid.amount || 0,
       proposal: bid.proposal || '',
       status: bid.status || 'pending',

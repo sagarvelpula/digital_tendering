@@ -37,9 +37,9 @@ const Sidebar: React.FC = () => {
       <div className="p-4 flex items-center justify-center">
         <div className="flex items-center space-x-2">
           <div className="h-8 w-8 rounded bg-white text-sidebar flex items-center justify-center font-bold">
-            TMS
+            DT
           </div>
-          <span className="text-xl font-bold">TenderFlow</span>
+          <span className="text-xl font-bold">Digital Tendering</span>
         </div>
       </div>
 
@@ -77,7 +77,7 @@ const Sidebar: React.FC = () => {
 
       <div className="p-4 border-t border-sidebar-border">
         <div className="text-center text-sm opacity-70">
-          TenderFlow v1.0
+          Digital Tendering v1.0
         </div>
       </div>
     </div>
