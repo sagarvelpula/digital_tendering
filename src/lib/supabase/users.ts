@@ -85,7 +85,8 @@ export const updateUserProfile = async (userId: string, updates: Partial<UserPro
       company: updates.company,
       photo_url: updates.photo_url,
       categories: updates.categories,
-      email_notifications: updates.email_notifications
+      email_notifications: updates.email_notifications,
+      status: updates.status
     };
 
     // Filter out undefined values
