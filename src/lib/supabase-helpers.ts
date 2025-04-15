@@ -1,4 +1,3 @@
-
 export * from './supabase/core';
 export * from './supabase/tenders';
 export * from './supabase/bids';
@@ -8,7 +7,7 @@ export * from './supabase/users';
 import { supabase } from '@/integrations/supabase/client';
 import { handleSupabaseError } from './supabase/core';
 import { Role } from '@/context/AuthContext';
-import { UserProfile } from './supabase/users';
+import { UserProfile } from './supabase/types/user-types';
 
 export const fetchUserProfile = async (userId: string): Promise<UserProfile | null> => {
   try {
