@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -69,11 +68,11 @@ const ForgotPassword: React.FC = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle>Reset Password</CardTitle>
+            <CardTitle>Recover Your Password</CardTitle>
             <CardDescription>
               {isSubmitted 
-                ? "Please check your email for the reset link"
-                : "Enter your email to receive a password reset link"}
+                ? "Password reset instructions sent" 
+                : "Enter your email to receive password recovery instructions"}
             </CardDescription>
           </CardHeader>
           
@@ -81,15 +80,15 @@ const ForgotPassword: React.FC = () => {
             <CardContent className="space-y-4 text-center">
               <div className="bg-green-50 border border-green-200 rounded-md p-4 mb-4">
                 <p className="text-green-800">
-                  A password reset link has been sent to your email address. 
-                  Please check your inbox and follow the instructions to reset your password.
+                  Password recovery instructions have been sent to your email. 
+                  Please check your inbox and follow the steps to reset your password.
                 </p>
               </div>
               <Button
                 onClick={() => navigate('/login')}
                 className="w-full mt-4"
               >
-                Back to Login
+                Return to Login
               </Button>
             </CardContent>
           ) : (

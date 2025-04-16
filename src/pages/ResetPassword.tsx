@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { updatePasswordSchema } from '@/lib/form-schemas';
@@ -11,7 +11,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { useNavigate } from 'react-router-dom';
 import { Loader2, Eye, EyeOff } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { toast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 type ResetPasswordFormValues = {
   password: string;
@@ -70,11 +70,11 @@ const ResetPassword: React.FC = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle>Reset Your Password</CardTitle>
+            <CardTitle>Create New Password</CardTitle>
             <CardDescription>
               {isSuccess 
-                ? "Your password has been successfully reset" 
-                : "Please enter your new password"}
+                ? "Password Successfully Updated" 
+                : "Enter a new, strong password to secure your account"}
             </CardDescription>
           </CardHeader>
           
@@ -82,8 +82,8 @@ const ResetPassword: React.FC = () => {
             <CardContent className="space-y-4 text-center">
               <div className="bg-green-50 border border-green-200 rounded-md p-4 mb-4">
                 <p className="text-green-800">
-                  Your password has been reset successfully!
-                  You will be redirected to the login page.
+                  Your account password has been successfully updated! 
+                  You can now log in with your new password.
                 </p>
               </div>
               <Button
