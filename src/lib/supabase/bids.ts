@@ -40,7 +40,7 @@ export const createBid = async (bid: Omit<Bid, 'id' | 'submittedAt' | 'status'>)
     const { data: rawData, error } = await supabase
       .from('bids')
       .insert(supabaseBid)
-      .select('*, vendors:vendor_id(name)')
+      .select('*, users:vendor_id(name)')
       .single();
 
     if (error) throw error;
@@ -51,7 +51,7 @@ export const createBid = async (bid: Omit<Bid, 'id' | 'submittedAt' | 'status'>)
       id: data.id || '',
       tenderId: data.tender_id || '',
       vendorId: data.vendor_id || '',
-      vendorName: data.vendors?.name || 'Unknown Vendor',
+      vendorName: data.users?.name || 'Unknown Vendor',
       amount: data.amount || 0,
       proposal: data.proposal || '',
       status: data.status || 'pending',
@@ -73,7 +73,7 @@ export const updateBid = async (id: string, updates: Partial<Bid>): Promise<Bid 
       .from('bids')
       .update(supabaseUpdates)
       .eq('id', id)
-      .select('*, vendors:vendor_id(name)')
+      .select('*, users:vendor_id(name)')
       .single();
 
     if (error) throw error;
@@ -84,7 +84,7 @@ export const updateBid = async (id: string, updates: Partial<Bid>): Promise<Bid 
       id: data.id || '',
       tenderId: data.tender_id || '',
       vendorId: data.vendor_id || '',
-      vendorName: data.vendors?.name || 'Unknown Vendor',
+      vendorName: data.users?.name || 'Unknown Vendor',
       amount: data.amount || 0,
       proposal: data.proposal || '',
       status: data.status || 'pending',
