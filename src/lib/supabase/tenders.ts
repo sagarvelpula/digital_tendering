@@ -111,6 +111,15 @@ export const updateTender = async (id: string, updates: Partial<Tender>): Promis
 
 export const deleteTender = async (id: string): Promise<boolean> => {
   try {
+    // First, delete all bids associated with this tender
+    const { error: bidsError } = await supabase
+      .from('bids')
+      .delete()
+      .eq('tender_id', id);
+
+    if (bidsError) throw bidsError;
+    
+    // Then delete the tender itself
     const { error } = await supabase
       .from('tenders')
       .delete()
