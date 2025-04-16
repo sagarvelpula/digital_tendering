@@ -2,6 +2,7 @@ export * from './supabase/core';
 export * from './supabase/tenders';
 export * from './supabase/bids';
 export * from './supabase/users';
+export * from './supabase/user-profiles'; // This will export updateUserStatus to be accessible
 
 // Keep the user profile operations in this file for now since they're simpler
 import { supabase } from '@/integrations/supabase/client';
