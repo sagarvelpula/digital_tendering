@@ -115,7 +115,9 @@ export const NotificationsDropdown = () => {
                     variant="ghost"
                     size="icon"
                     className="h-6 w-6 rounded-full"
-                    onClick={() => handleMarkAsRead(notification.id)}
+                    onClick={(e) => {e.stopPropagation(); 
+                                     handleMarkAsRead(notification.id);
+                                    }}
                     disabled={notification.is_read}
                   >
                     {notification.is_read ? (
