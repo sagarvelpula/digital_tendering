@@ -165,7 +165,7 @@ const CreateTender: React.FC = () => {
                   name="value"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Budget Value (USD)*</FormLabel>
+                      <FormLabel>Budget Value (INR)*</FormLabel>
                       <FormControl>
                         <Input 
                           type="number" 
