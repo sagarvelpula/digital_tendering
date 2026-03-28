@@ -128,7 +128,7 @@ const TendersList: React.FC = () => {
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="font-medium">${tender.value.toLocaleString()}</div>
+                      <div className="font-medium">₹{tender.value.toLocaleString()}</div>
                       <div className="text-sm text-muted-foreground mt-1 flex items-center justify-end">
                         <Clock className="h-3 w-3 mr-1" />
                         Due: {new Date(tender.deadline).toLocaleDateString()}
