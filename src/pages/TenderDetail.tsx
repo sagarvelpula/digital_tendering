@@ -101,7 +101,7 @@ const TenderDetail: React.FC = () => {
               </CardDescription>
             </div>
             <div className="flex flex-col items-end">
-              <div className="text-xl font-bold">${tender.value.toLocaleString()}</div>
+              <div className="text-xl font-bold">₹{tender.value.toLocaleString()}</div>
               <div className="flex items-center mt-1 text-sm text-muted-foreground">
                 <Clock className="mr-1 h-4 w-4" />
                 Deadline: {new Date(tender.deadline).toLocaleDateString()}
