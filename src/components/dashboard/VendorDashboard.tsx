@@ -97,7 +97,7 @@ const VendorDashboard: React.FC = () => {
                         <Clock className="h-4 w-4 mr-1 text-muted-foreground" />
                         <span>Due: {new Date(tender.deadline).toLocaleDateString()}</span>
                       </div>
-                      <div className="font-medium">${tender.value.toLocaleString()}</div>
+                      <div className="font-medium">₹{tender.value.toLocaleString()}</div>
                     </div>
                   </div>
                   <div className="bg-muted py-3 px-4 flex justify-end">
@@ -141,7 +141,7 @@ const VendorDashboard: React.FC = () => {
                         {tender?.title || "Unknown Tender"}
                       </Link>
                       <div className="text-sm text-muted-foreground">
-                        Bid Amount: ${bid.amount.toLocaleString()} • {new Date(bid.submittedAt).toLocaleDateString()}
+                        Bid Amount: ₹{bid.amount.toLocaleString()} • {new Date(bid.submittedAt).toLocaleDateString()}
                       </div>
                     </div>
                     <Badge 
