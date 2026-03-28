@@ -63,7 +63,7 @@ const AdminDashboard: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Total Value</p>
-                <h3 className="text-2xl font-bold mt-1">${totalValue.toLocaleString()}</h3>
+                <h3 className="text-2xl font-bold mt-1">₹{totalValue.toLocaleString()}</h3>
               </div>
               <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
                 <Wallet className="h-5 w-5 text-green-600" />
@@ -142,7 +142,7 @@ const AdminDashboard: React.FC = () => {
                         </Link>
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        ${bid.amount.toLocaleString()} • {new Date(bid.submittedAt).toLocaleDateString()}
+                        ₹{bid.amount.toLocaleString()} • {new Date(bid.submittedAt).toLocaleDateString()}
                       </p>
                     </div>
                   </div>
