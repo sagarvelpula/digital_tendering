@@ -61,9 +61,10 @@ The system ensures security and structured access by separating roles:
 
 ## Screenshots
 
+Admin 
 <img width="1920" height="868" alt="Screenshot 2026-04-10 225713" src="https://github.com/user-attachments/assets/027b22de-a8d5-4a8c-b917-4766eeda0755" />
 
-
+Vendor
 
 <img width="1920" height="863" alt="Screenshot 2026-04-10 225801" src="https://github.com/user-attachments/assets/16208432-02df-45b6-b10a-24e5c91de4a5" />
 
